@@ -18,7 +18,7 @@ public abstract  class Utilisateur {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @NotBlank(message = "Le nom est obligatoire")
     @Column(nullable = false, length = 100)
