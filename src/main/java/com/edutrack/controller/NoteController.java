@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/api/notes")
 @RequiredArgsConstructor
 @Slf4j
-public class LivreController {
+public class NoteController {
 
     // INoteService — pas NoteServiceImpl
     // RAPPEL SOLID D : dépendre de l'abstraction
