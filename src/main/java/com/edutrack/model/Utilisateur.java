@@ -6,6 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Data
@@ -14,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Table(name="utilisateurs")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "type_utilisateur")
-public abstract  class Utilisateur {
+public abstract  class  Utilisateur implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,4 +54,41 @@ public abstract  class Utilisateur {
     private Boolean actif = true;
 
     public abstract String getRole();
+
+    // ── Méthodes UserDetails — requises par Spring Security ───────────
+
+    // getAuthorities() → retourne les rôles de l'utilisateur
+    // Spring Security utilise "ROLE_" comme préfixe obligatoire
+    // ETUDIANT → ROLE_ETUDIANT
+    // PROFESSEUR → ROLE_PROFESSEUR
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + getRole()));
+    }
+
+    @Override
+    public String getPassword() {
+        return motDePasse;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    // Les 3 méthodes suivantes contrôlent l'état du compte
+    // Pour simplifier on retourne true — à adapter en production
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    // isEnabled() → utilise notre champ actif
+    @Override
+    public boolean isEnabled() { return actif; }
+
 }
