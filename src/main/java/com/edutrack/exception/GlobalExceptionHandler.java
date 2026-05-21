@@ -2,6 +2,7 @@ package com.edutrack.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -76,6 +77,20 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         "Erreur interne — contactez l'administrateur",
+                        LocalDateTime.now()
+                ));
+    }
+
+    // ── 403 — accès refusé ────────────────────────────────────────────
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            AccessDeniedException ex) {
+        log.warn("Accès refusé : {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        403,
+                        "Accès refusé — vous n'avez pas le rôle requis",
                         LocalDateTime.now()
                 ));
     }

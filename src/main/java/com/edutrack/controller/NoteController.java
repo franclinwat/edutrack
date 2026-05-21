@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,11 @@ public class NoteController {
     // ResponseEntity<NoteResponseDTO>
     //   → on retourne le code HTTP + le body JSON ensemble
     //   → 201 Created car on a créé une ressource (pas 200 OK)
+    // ── Ajouter une note — PROFESSEUR seulement ───────────────────────
+    // @PreAuthorize s'exécute AVANT la méthode
+    // Si le rôle est mauvais → 403 Forbidden
+    // Spring lit le SecurityContext mis par JwtAuthFilter
+    @PreAuthorize("hasRole('PROFESSEUR')")
     @PostMapping
     public ResponseEntity<NoteResponseDTO> ajouterNote(
             @Valid @RequestBody NoteRequestDTO dto) {
@@ -62,6 +68,9 @@ public class NoteController {
     // @PathVariable → extrait la valeur de {etudiantId} dans l'URL
     //   GET /api/notes/etudiant/3 → etudiantId = 3
     //   GET /api/notes/etudiant/7 → etudiantId = 7
+
+    // ── Voir ses notes — ETUDIANT ou ADMIN ───────────────────────────
+    @PreAuthorize("hasAnyRole('ETUDIANT', 'ADMIN')")
     @GetMapping("/etudiant/{etudiantId}")
     public ResponseEntity<List<NoteResponseDTO>> getNotesByEtudiant(
             @PathVariable Long etudiantId) {
@@ -94,6 +103,8 @@ public class NoteController {
 
     // ── GET /api/notes/etudiant/3/moyenne?semestre=2024-S1 ────────────
     // Calcul de la moyenne d'un étudiant pour un semestre
+    // ── Moyenne — ETUDIANT ou ADMIN ───────────────────────────────────
+    @PreAuthorize("hasAnyRole('ETUDIANT', 'ADMIN')")
     @GetMapping("/etudiant/{etudiantId}/moyenne")
     public ResponseEntity<Double> getMoyenne(
             @PathVariable Long etudiantId,
@@ -110,6 +121,8 @@ public class NoteController {
     //
     // @PutMapping("/{id}") → répond aux PUT sur /api/notes/1
     // On utilise PUT et non PATCH car on remplace les champs modifiables
+    // ── Modifier une note — PROFESSEUR ou ADMIN ───────────────────────
+    @PreAuthorize("hasAnyRole('PROFESSEUR', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<NoteResponseDTO> modifierNote(
             @PathVariable Long id,
